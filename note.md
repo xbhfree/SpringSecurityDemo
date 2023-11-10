@@ -25,3 +25,46 @@
     ```
     * BCryptPasswordEncoder是官方推荐密码解析器，对bcrtypt强散列方法的具体实现，是基于hash算法的单向加密，可以通过strength控制加密强度，默认为10
     
+# web权限方案
+## 认证
+1. 设置登录的用户名和密码
+   1. 第一种方案：配置application.properties文件
+      ``` properties
+      spring.security.user.name=xbh
+      spring.security.user.password=123456
+      ```
+   2. 第二种方案：配置类
+   该配置最新版已舍弃，需要用组件进行安全配置https://www.cnblogs.com/cnblog-user/p/16386942.html
+   ```java
+    import org.springframework.context.annotation.Bean;import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;import org.springframework.security.crypto.password.PasswordEncoder;@Configuration
+      public class SecurityConfig extends WebSecurityConfigurerAdapter{
+      @Override
+      protected void configure(AuthenticationManagerBuilder auth)throws Exception{
+      BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+      String password = encoder.encode("123");
+      auth.inMemoryAuthentication().withUser("xbh").password(password).roles("admin");
+      }
+   
+      @Bean
+      PasswordEncoder password(){
+        return new BCryptPasswordEncoder();
+      }    
+    }
+   ```
+   3.1.5版本的sb配置
+    ``` java
+    @Configuration
+      public class SecurityConfiguration {
+        @Bean
+        public InMemoryUserDetailsManager userDetailsService() {
+        UserDetails user = User.withDefaultPasswordEncoder()
+        .username("user")
+        .password("123")
+        .roles("USER")
+        .build();
+        return new InMemoryUserDetailsManager(user);
+        }
+      }
+   ```
+   3. 第三种方案：自定义实现类
+## 授权
