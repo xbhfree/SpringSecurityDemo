@@ -1,0 +1,10 @@
+<?xml version="1.1" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace: 代表xml的名称，类似java包名-->
+<mapper namespace="com.example.springsecuritydemo.mapper.UserMapper">
+    <select id="getUsersById" resultType="com.example.springsecuritydemo.pojo.User">
+        select * from t_user where id = #{uId}
+    </select>
+</mapper>
