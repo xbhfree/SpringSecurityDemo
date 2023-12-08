@@ -80,3 +80,109 @@
 * 控制类上@PreAuthorize("hasAnyAuthority('auth')")格式权限
 * 实体类中不需要映射的属性：Transient转瞬即逝的适用于依赖JPA的, @JsonIgnore
 * mybatis-plus忽略某个属性 @TableField(exist = false)
+
+## 错误界面
+### 401未登录异常，403无权限异常
+```java
+// 实现 AuthenticationEntryPoint
+@Component("customAuthenticationEntryPoint")
+public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+  @Override
+  public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    // 构建自定义的响应体
+    RestError re = new RestError(HttpStatus.UNAUTHORIZED.toString(), "Authentication failed");
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    OutputStream responseStream = response.getOutputStream();
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.writeValue(responseStream, re);
+    responseStream.flush();
+  }
+}
+
+// 实现 AccessDeniedHandler
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
+  @Override
+  public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+    // 构建自定义的响应体
+    RestError re = new RestError(HttpStatus.FORBIDDEN.toString(), "Access denied");
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+    OutputStream responseStream = response.getOutputStream();
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.writeValue(responseStream, re);
+    responseStream.flush();
+  }
+}
+
+// 配置 SecurityConfig
+@Configuration
+@EnableWebSecurity
+public class CustomSecurityConfig {
+  @Autowired
+  @Qualifier("customAuthenticationEntryPoint")
+  AuthenticationEntryPoint authEntryPoint;
+
+  @Autowired
+  @Qualifier("customAccessDeniedHandler")
+  AccessDeniedHandler accessDeniedHandler;
+
+  @Bean
+  public UserDetailsService userDetailsService() {
+    UserDetails admin = User.withUsername("admin")
+      .password("password")
+      .roles("ADMIN")
+      .build();
+    InMemoryUserDetailsManager userDetailsManager = new InMemoryUserDetailsManager();
+    userDetailsManager.createUser(admin);
+    return userDetailsManager;
+  }
+
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http.requestMatchers()
+      .antMatchers("/login")
+      .and()
+      .authorizeRequests()
+      .anyRequest()
+      .hasRole("ADMIN")
+      .and()
+      .httpBasic()
+      .and()
+      .exceptionHandling()
+      .authenticationEntryPoint(authEntryPoint)
+      .accessDeniedHandler(accessDeniedHandler);
+    return http.build();
+  }
+}
+
+```
+
+* 也可以在配置类中直接设置相关页面
+  * ```java
+          @Bean
+          public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+          return http
+          .authorizeHttpRequests(authorizeHttpRequests-> //在这个后面开始配置URL相关的【URL访问权限控制相关的】
+          authorizeHttpRequests.requestMatchers("/login","/test/hello").permitAll() //permitAll:授予所有权限【匿名可以访问的、不用登录就可以访问】
+          .anyRequest() //任何的请求
+          .authenticated() //需要认证【登录】后才能访问
+          )
+            .formLogin(formLogin->
+                          formLogin.loginPage("/login") //登录页面
+                                  .loginProcessingUrl("/login").permitAll() //登录接口可以匿名访问
+                                  .defaultSuccessUrl("/index.html") //登录成功访问/index页面
+
+                  )
+                  .csrf(Customizer.withDefaults()) //关闭跨域漏洞攻击防护
+                  .logout(logout->logout.logoutUrl("/logout").deleteCookies("JSESSIONID").invalidateHttpSession(true).logoutSuccessUrl("/index")) //退出登录接口
+                  .exceptionHandling(new Customizer<ExceptionHandlingConfigurer<HttpSecurity>>() {
+                      @Override
+                      public void customize(ExceptionHandlingConfigurer<HttpSecurity> httpSecurityExceptionHandlingConfigurer) {
+                          httpSecurityExceptionHandlingConfigurer.accessDeniedPage("/access-denied2.html");
+                      }
+                  })
+                  .build();
+
+      }
+```

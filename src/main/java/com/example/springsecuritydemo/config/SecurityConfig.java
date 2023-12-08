@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
@@ -95,11 +96,17 @@ public class SecurityConfig{
                 .formLogin(formLogin->
                         formLogin.loginPage("/login") //登录页面
                                 .loginProcessingUrl("/login").permitAll() //登录接口可以匿名访问
-                                .defaultSuccessUrl("/index") //登录成功访问/index页面
+                                .defaultSuccessUrl("/index.html") //登录成功访问/index页面
 
                 )
                 .csrf(Customizer.withDefaults()) //关闭跨域漏洞攻击防护
                 .logout(logout->logout.logoutUrl("/logout").deleteCookies("JSESSIONID").invalidateHttpSession(true).logoutSuccessUrl("/index")) //退出登录接口
+                .exceptionHandling(new Customizer<ExceptionHandlingConfigurer<HttpSecurity>>() {
+                    @Override
+                    public void customize(ExceptionHandlingConfigurer<HttpSecurity> httpSecurityExceptionHandlingConfigurer) {
+                        httpSecurityExceptionHandlingConfigurer.accessDeniedPage("/access-denied2.html");
+                    }
+                })
                 .build();
 
     }
