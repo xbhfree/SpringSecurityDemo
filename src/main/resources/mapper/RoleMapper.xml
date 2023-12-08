@@ -1,0 +1,14 @@
+<?xml version="1.1" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace: 代表xml的名称，类似java包名-->
+<mapper namespace="com.example.springsecuritydemo.mapper.RoleMapper">
+    <select id="getRoleWithUserId" resultType="com.example.springsecuritydemo.pojo.Role">
+        SELECT t_role.*
+        FROM t_user
+                 JOIN user_role ON t_user.id = user_role.uid
+                 JOIN t_role ON user_role.rid = t_role.id
+        WHERE t_user.id = #{uId};
+    </select>
+</mapper>

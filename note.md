@@ -68,3 +68,15 @@
    ```
    3. 第三种方案：自定义实现类
 ## 授权
+### 三个角色判断方法
+* hasAuthority
+  * 如果当前主体有指定的权限，则返回true，无返回false
+* hasAnyAuthority("role1,role2,role3")
+### 角色和权限命名规范
+* role在数据库中必须以ROLE_开头
+* 角色必须大写
+* 其他的就是权限了
+* 控制类上@Secured({"ROLE_ADMIN"})格式角色，默认不开启，配置类上加@EnableGlobalMethodSecurity(securedEnabled = true) 启动
+* 控制类上@PreAuthorize("hasAnyAuthority('auth')")格式权限
+* 实体类中不需要映射的属性：Transient转瞬即逝的适用于依赖JPA的, @JsonIgnore
+* mybatis-plus忽略某个属性 @TableField(exist = false)

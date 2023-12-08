@@ -1,0 +1,14 @@
+<?xml version="1.1" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace: 代表xml的名称，类似java包名-->
+<mapper namespace="com.example.springsecuritydemo.mapper.PermissionMapper">
+    <select id="getPermissionWithRoleId" resultType="com.example.springsecuritydemo.pojo.Permission">
+        SELECT t_permission.*
+        FROM t_role
+                 JOIN role_permission ON role_permission.rid = t_role.id
+                 JOIN t_permission ON role_permission.pid = t_permission.id
+        WHERE t_role.id = #{rId};
+    </select>
+</mapper>
