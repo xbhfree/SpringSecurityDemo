@@ -80,7 +80,12 @@
 * 控制类上@PreAuthorize("hasAnyAuthority('auth')")格式权限
 * 实体类中不需要映射的属性：Transient转瞬即逝的适用于依赖JPA的, @JsonIgnore
 * mybatis-plus忽略某个属性 @TableField(exist = false)
-
+### 权限注解
+1. `@Secured({"ROLE_ADMIN"})` 对角色进行校验
+2. `@PreAuthorize("hasAnyAuthority('write')")` 对权限进行校验，用在方法前
+3. `@PostAuthorize("hasAnyAuthority('write')")` 对权限进行校验，用在方法后
+4. `@PreFilter(value = "filterObject.id%2==0")` 方法传入数据过滤
+5. `@PostFilter("filterObject.username == 'alisa'")` 方法返回数据过滤 保留username == alisa的数据
 ## 错误界面
 ### 401未登录异常，403无权限异常
 ```java
