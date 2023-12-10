@@ -28,4 +28,10 @@ public class TestController {
         return "hello Write";
     }
 
+
+    @GetMapping("logout")
+    public String logout(){
+        return "hello logout";
+    }
+
 }

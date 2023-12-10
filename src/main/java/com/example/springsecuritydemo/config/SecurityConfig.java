@@ -8,12 +8,16 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
@@ -23,6 +27,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.sql.DataSource;
 
@@ -72,7 +77,7 @@ public class SecurityConfig{
     @Autowired
     private MyUserDetailService myUserDetailService;
 
-    @Bean
+    /*@Bean
     public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) throws Exception{
         AuthenticationManager manager = httpSecurity
                 .getSharedObject(AuthenticationManagerBuilder.class)
@@ -81,12 +86,23 @@ public class SecurityConfig{
                 .build();
         return manager;
 
+    }*/
+    @Bean
+    public AuthenticationManager authenticationManager() throws Exception{
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(myUserDetailService);
+        ProviderManager providerManager = new ProviderManager(provider);
+        return providerManager;
     }
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        //对AuthenticationManager的第二种写法
+        /*AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.userDetailsService(myUserDetailService);
+        AuthenticationManager build = authenticationManagerBuilder.build();*/
         return http
+                //.authenticationManager(build) //对AuthenticationManager的第二种写法
                 .authorizeHttpRequests(authorizeHttpRequests-> //在这个后面开始配置URL相关的【URL访问权限控制相关的】
                         authorizeHttpRequests.requestMatchers("/login","/test/hello").permitAll() //permitAll:授予所有权限【匿名可以访问的、不用登录就可以访问】
                                 .anyRequest() //任何的请求
@@ -100,15 +116,28 @@ public class SecurityConfig{
 
                 )
                 .csrf(Customizer.withDefaults()) //关闭跨域漏洞攻击防护
-                .logout(logout->logout.logoutUrl("/logout").deleteCookies("JSESSIONID").invalidateHttpSession(true).logoutSuccessUrl("/index")) //退出登录接口
                 .exceptionHandling(new Customizer<ExceptionHandlingConfigurer<HttpSecurity>>() {
                     @Override
                     public void customize(ExceptionHandlingConfigurer<HttpSecurity> httpSecurityExceptionHandlingConfigurer) {
                         httpSecurityExceptionHandlingConfigurer.accessDeniedPage("/access-denied2.html");
                     }
                 })
+                //.logout(logout->logout.logoutUrl("/logout").logoutSuccessUrl("/login"))
+                .logout(logout->logout.logoutRequestMatcher(new AntPathRequestMatcher("/logout","GET")).logoutSuccessUrl("/login"))
+                /*.logout(new Customizer<LogoutConfigurer<HttpSecurity>>() {
+                    @Override
+                    public void customize(LogoutConfigurer<HttpSecurity> httpSecurityLogoutConfigurer) {
+                        httpSecurityLogoutConfigurer
+                                .logoutUrl("/logout")
+                                .logoutSuccessUrl("/login")
+                                .deleteCookies("JSESSIONID")
+                                .invalidateHttpSession(true)
+                                .permitAll();
+                    }
+                })*/
                 .build();
 
     }
+
 
 }
