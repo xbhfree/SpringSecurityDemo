@@ -18,7 +18,13 @@
         <!-- 不使用 th:action 属性 和 不关闭csrf 的情况下，需要放开下面的标签 -->
         <!--<input th:name="${_csrf.parameterName}" type="hidden" th:value="${_csrf.token}"/>-->
 
+        <p>
+            <span>自动登录</span>
+            <!--固定写法-->
+            <input type="checkbox" id="remember-me" name="remember-me">
+        </p>
         <input type="submit" value="登录" />
+
     </form>
 </div>
 </body>

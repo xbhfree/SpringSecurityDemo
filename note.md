@@ -160,10 +160,9 @@ public class CustomSecurityConfig {
     return http.build();
   }
 }
-
 ```
-
 * 也可以在配置类中直接设置相关页面
+  * 
   * ```java
           @Bean
           public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -190,4 +189,54 @@ public class CustomSecurityConfig {
                   .build();
 
       }
-```
+    ```
+
+
+
+
+
+
+
+
+
+
+### 自动登录
+* 原理：
+    * ![spring_security自动登录原理.png](notepics/spring_security自动登录原理.png)
+    * ![spring_security自动登录原理02.png](notepics/spring_security自动登录原理02.png)
+* 实现
+  * 创建表：
+  ``` mysql
+    CREATE TABLE `persistent_logins`(
+    `username` VARCHAR(64) NOT NULL,
+    `series` VARCHAR(64) NOT NULL,
+    `token` VARCHAR(64) NOT NULL,
+    `last_used` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`series`)
+    ) ENGINE=INNODB DEFAULT CHARSET=utf8;
+    ```
+  * 注入数据源
+  ```java
+    @Autowired
+    private DataSource dataSource;
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository(){
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+        //自动生成数据库表
+        //jdbcTokenRepository.setCreateTableOnStartup(true);
+        return jdbcTokenRepository;
+    }
+    ```
+  * 配置bean SecurityFilterChain
+  ```java
+  http.rememberMe(t -> t.tokenRepository(persistentTokenRepository()).tokenValiditySeconds(60).userDetailsService(myUserDetailService))
+    ```
+  * html页面配置
+  ```html
+        <p>
+            <span>自动登录</span>
+            <!--固定写法-->
+            <input type="checkbox" id="remember-me" name="remember-me">
+        </p>
+    ```
