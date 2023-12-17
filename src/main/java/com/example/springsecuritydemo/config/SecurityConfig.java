@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.userdetails.User;
@@ -128,7 +129,7 @@ public class SecurityConfig{
                                 .defaultSuccessUrl("/index.html") //登录成功访问/index页面
 
                 )
-                .csrf(Customizer.withDefaults()) //关闭跨域漏洞攻击防护
+                //.csrf(Customizer.withDefaults()) //关闭跨域漏洞攻击防护
                 .exceptionHandling(new Customizer<ExceptionHandlingConfigurer<HttpSecurity>>() {
                     @Override
                     public void customize(ExceptionHandlingConfigurer<HttpSecurity> httpSecurityExceptionHandlingConfigurer) {

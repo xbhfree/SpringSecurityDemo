@@ -5,7 +5,7 @@
 </head>
 <body>
 <div>
-    <form th:action="@{/login}" method="post">
+    <form th:action="@{/login}"  method="post">
         <p>
             <span>用户名:</span>
             <input type="text" id="username" name="username">
@@ -14,7 +14,7 @@
             <span>密码:</span>
             <input type="password" id="password" name="password">
         </p>
-
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <!-- 不使用 th:action 属性 和 不关闭csrf 的情况下，需要放开下面的标签 -->
         <!--<input th:name="${_csrf.parameterName}" type="hidden" th:value="${_csrf.token}"/>-->
 

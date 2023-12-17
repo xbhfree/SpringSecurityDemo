@@ -240,3 +240,14 @@ public class CustomSecurityConfig {
             <input type="checkbox" id="remember-me" name="remember-me">
         </p>
     ```
+  
+## CSRF
+### 简介
+* 跨站请求伪造（Cross-site request forgery），也曾被称为one-click attack或者session riding，通常缩写未CSRF或者XSRF，是一种挟制用户当前已登录的web应用程序上执行非本意的操作攻击方法。跟跨网站脚本（XSS）相比，XSS利用的是用户对指定网站的信任，CSRF利用的是网站对用户网页浏览器的信任。
+* 原理漏洞：简单的身份验证只能保证请求发自某个用户的浏览器，却不能保证请求本身是用户自愿发出的
+* 从spring security4.0开始，默认情况下会启用CSRF保护，以防止CSRF攻击应用程序
+* spring security CSRF会针对patch、post、put、delete方法进行防护
+
+### 实现
+* html代码加入`<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">`
+* 
